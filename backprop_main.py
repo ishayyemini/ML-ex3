@@ -132,3 +132,38 @@ def d():
         plt.imshow(row.reshape(28, 28), interpolation="nearest")
         plt.title(f"W[{i}]")
         plt.show()
+
+
+def e():
+    # Loading Data
+    np.random.seed(0)  # For reproducibility
+    x_train, y_train, x_test, y_test = load_as_matrix_with_labels(50000, 10000)
+
+    # Training configuration
+    epochs = 20
+    batch_size = 128
+    learning_rate = 0.1
+
+    # Network configuration
+    layer_dims = [784, 256, 128, 32, 10]
+
+    # Training
+    net = Network(layer_dims)
+    res = net.train(
+        x_train,
+        y_train,
+        epochs,
+        batch_size,
+        learning_rate,
+        x_test,
+        y_test,
+    )
+
+    # Test accuracy plotting
+    plt.plot([i for i in range(1, epochs + 1)], res[4])
+    plt.xlabel("Epochs")
+    plt.ylabel("Test Accuracy")
+    plt.show()
+
+    test_accuracy = res[4][-1]
+    print(f"Final epoch test accuracy: {test_accuracy:.2f}")
