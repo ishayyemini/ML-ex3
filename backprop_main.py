@@ -60,3 +60,32 @@ def b():
     plt.ylabel("Test Accuracy")
     plt.legend()
     plt.show()
+
+
+def c():
+    # Loading Data
+    np.random.seed(0)  # For reproducibility
+    x_train, y_train, x_test, y_test = load_as_matrix_with_labels(50000, 10000)
+
+    # Training configuration
+    epochs = 30
+    batch_size = 10
+    learning_rate = 0.1
+
+    # Network configuration
+    layer_dims = [784, 40, 10]
+
+    # Training
+    net = Network(layer_dims)
+    res = net.train(
+        x_train,
+        y_train,
+        epochs,
+        batch_size,
+        learning_rate,
+        x_test,
+        y_test,
+    )
+
+    test_accuracy = res[4][-1]
+    print(f"Final epoch test accuracy using learning rate 0.1: {test_accuracy:.2f}")
