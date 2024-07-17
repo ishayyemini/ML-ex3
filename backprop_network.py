@@ -24,12 +24,12 @@ class Network(object):
             self.parameters["b" + str(l)] = np.zeros((sizes[l], 1))
 
     def relu(self, x):
-        """TODO: Implement the relu function."""
-        raise NotImplementedError
+        return np.maximum(0, x)
 
     def relu_derivative(self, x):
-        """TODO: Implement the derivative of the relu function."""
-        raise NotImplementedError
+        derivative = np.zeros_like(x)
+        derivative[x > 0] = 1
+        return derivative
 
     def cross_entropy_loss(self, logits, y_true):
         m = y_true.shape[0]
@@ -45,8 +45,7 @@ class Network(object):
                 "y_true": numpy array of shape (batch_size,) containing the true labels of the batch
         Returns: a numpy array of shape (10,batch_size) where each column is the gradient of the loss with respect to y_pred (the output of the network before the softmax layer) for the given example.
         """
-        # TODO: Implement
-        raise NotImplementedError
+        return softmax(logits, axis=0) - np.eye(10)[y_true].T
 
     def forward_propagation(self, X):
         """Implement the forward step of the backpropagation algorithm.
@@ -54,11 +53,19 @@ class Network(object):
         Returns: "ZL" - numpy array of shape (10, batch_size), the output of the network on the input X (before the softmax layer)
                 "forward_outputs" - A list of length self.num_layers containing the forward computation (parameters & output of each layer).
         """
-        ZL = 1
+        L = self.num_layers
+        prev_z = X.copy()
         forward_outputs = []
 
-        # TODO: Implement the forward function
-        raise NotImplementedError
+        for l in range(L):
+            W = self.parameters["W" + (str(l + 1))]
+            b = self.parameters["b" + str(l + 1)]
+            V = (W @ prev_z) + b
+            Z = self.relu(V) if l + 1 < L else V
+            forward_outputs.append((W, b, prev_z, V, Z))
+            prev_z = Z.copy()
+
+        ZL = prev_z
         return ZL, forward_outputs
 
     def backpropagation(self, ZL, Y, forward_outputs):
@@ -71,10 +78,25 @@ class Network(object):
                             grads["db" + str(l)] is a numpy array of shape (sizes[l],1).
 
         """
+        L = self.num_layers
+        batch_size = Y.shape[0]
         grads = {}
+        delta = self.cross_entropy_derivative(ZL, Y)
+        grads["dW" + str(L)] = (delta @ forward_outputs[L - 1][2].T) / batch_size
+        grads["db" + str(L)] = np.mean(delta, axis=1, keepdims=True)
 
-        # TODO: Implement the backward function
-        raise NotImplementedError
+        for l in range(L - 1, 0, -1):
+            delta = self.parameters["W" + str(l + 1)].T @ (
+                delta
+                if l == L - 1
+                else (self.relu_derivative(forward_outputs[l][3]) * delta)
+            )
+            mul = delta * self.relu_derivative(forward_outputs[l - 1][3])
+            grads["dW" + str(l)] = (
+                mul @ self.relu_derivative(forward_outputs[l - 1][2]).T
+            ) / batch_size
+            grads["db" + str(l)] = np.mean(mul, axis=1, keepdims=True)
+
         return grads
 
     def sgd_step(self, grads, learning_rate):
