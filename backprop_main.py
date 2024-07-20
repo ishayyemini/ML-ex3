@@ -167,6 +167,3 @@ def e():
 
     test_accuracy = res[4][-1]
     print(f"Final epoch test accuracy: {test_accuracy:.2f}")
-
-
-e()
