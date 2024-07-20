@@ -140,12 +140,12 @@ def e():
     x_train, y_train, x_test, y_test = load_as_matrix_with_labels(50000, 10000)
 
     # Training configuration
-    epochs = 20
+    epochs = 30
     batch_size = 128
     learning_rate = 0.1
 
     # Network configuration
-    layer_dims = [784, 256, 32, 10]
+    layer_dims = [784, 64, 10]
 
     # Training
     net = Network(layer_dims)
@@ -167,3 +167,6 @@ def e():
 
     test_accuracy = res[4][-1]
     print(f"Final epoch test accuracy: {test_accuracy:.2f}")
+
+
+e()
