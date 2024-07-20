@@ -27,9 +27,7 @@ class Network(object):
         return np.maximum(0, x)
 
     def relu_derivative(self, x):
-        derivative = np.zeros_like(x)
-        derivative[x > 0] = 1
-        return derivative
+        return np.where(x > 0, 1, 0)
 
     def cross_entropy_loss(self, logits, y_true):
         m = y_true.shape[0]
@@ -55,14 +53,14 @@ class Network(object):
         """
         L = self.num_layers
         prev_z = X.copy()
-        forward_outputs = []
+        forward_outputs = []  # [i] = (W[i + 1], b[i + 1], Z[i], V[i + 1])
 
         for l in range(L):
-            W = self.parameters["W" + (str(l + 1))]
+            W = self.parameters["W" + str(l + 1)]
             b = self.parameters["b" + str(l + 1)]
-            V = (W @ prev_z) + b
+            V = (W @ prev_z) + b  # V[l + 1] = W[l + 1]Z[l] + b[l + 1]
             Z = self.relu(V) if l + 1 < L else V
-            forward_outputs.append((W, b, prev_z, V, Z))
+            forward_outputs.append((W, b, prev_z, V))
             prev_z = Z.copy()
 
         ZL = prev_z
@@ -92,9 +90,7 @@ class Network(object):
                 else (self.relu_derivative(forward_outputs[l][3]) * delta)
             )
             mul = delta * self.relu_derivative(forward_outputs[l - 1][3])
-            grads["dW" + str(l)] = (
-                mul @ self.relu_derivative(forward_outputs[l - 1][2]).T
-            ) / batch_size
+            grads["dW" + str(l)] = (mul @ forward_outputs[l - 1][2].T) / batch_size
             grads["db" + str(l)] = np.mean(mul, axis=1, keepdims=True)
 
         return grads

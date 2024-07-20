@@ -145,7 +145,7 @@ def e():
     learning_rate = 0.1
 
     # Network configuration
-    layer_dims = [784, 256, 128, 32, 10]
+    layer_dims = [784, 256, 32, 10]
 
     # Training
     net = Network(layer_dims)
